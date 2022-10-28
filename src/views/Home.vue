@@ -25,15 +25,32 @@
         </div>
       </div>
     </div>
+    <!-- Invoices -->
+    <div v-if="invoiceData.length > 0">
+      <Invoice
+        v-for="(invoice, index) in invoiceData"
+        :key="index"
+        :invoice="invoice"
+      />
+    </div>
+    <div v-else class="empty flex flex-column">
+      <img src="@/assets/illustration-empty.svg" alt="" />
+      <h3>There is nothing here</h3>
+      <p>
+        Create a new invoice by clicking the New Invoice button and get started
+      </p>
+    </div>
   </div>
 </template>
 
 <script setup>
 import { ref } from "vue";
 import { useStore } from "vuex";
+import Invoice from "../components/Invoice.vue";
 
 const store = useStore();
 const filterMenu = ref(false);
+const invoiceData = ref(store.state.invoiceData);
 
 function newInvoice() {
   store.commit("TOGGLE_INVOICE");
@@ -127,6 +144,29 @@ function toggleFilterMenu() {
           }
         }
       }
+    }
+  }
+
+  .empty {
+    margin-top: 160px;
+    align-items: center;
+
+    img {
+      width: 214px;
+      height: 200px;
+    }
+
+    h3 {
+      font-size: 20px;
+      margin-top: 40px;
+    }
+
+    p {
+      text-align: center;
+      max-width: 224px;
+      font-size: 12px;
+      font-weight: 300;
+      margin-top: 16px;
     }
   }
 }

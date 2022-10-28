@@ -1,6 +1,7 @@
 <template>
-  <div v-if="invociesLoaded">
+  <div>
     <div v-if="!mobile" class="app flex flex-column">
+      <Loader v-show="invociesLoaded" />
       <Navigation />
       <div class="app-content flex flex-column">
         <Modal v-if="modalActive"/>
@@ -23,6 +24,7 @@ import Navigation from "./components/Navigation.vue";
 import InvoiceModal from "./components/InvoiceModal.vue";
 import { useStore } from "vuex";
 import Modal from "./components/Modal.vue";
+import Loader from "./components/Loader.vue";
 
 // Mobile check
 const mobile = ref(null);
@@ -193,6 +195,15 @@ button,
 
   &::before {
     background-color: #dfe3fa;
+  }
+}
+
+.pending {
+  color: #ff8f00;
+  background-color: rgba(255, 145, 0, 0.1);
+
+  &::before {
+    background-color: #ff8f00;
   }
 }
 </style>

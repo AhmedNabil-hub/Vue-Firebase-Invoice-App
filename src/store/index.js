@@ -7,7 +7,7 @@ const store = createStore({
     invoiceModal: null,
     modalActive: null,
     invoiceData: [],
-    invoicesLoaded: null,
+    invoicesLoaded: false,
   },
   mutations: {
     TOGGLE_INVOICE(state) {
