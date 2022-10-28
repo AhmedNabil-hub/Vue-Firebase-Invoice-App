@@ -5,7 +5,7 @@
     class="invoice-wrap flex flex-column"
   >
     <form @submit.prevent="submitForm" class="invoice-content">
-      <Loader v-show="loading"/>
+      <Loader v-show="loading" />
 
       <h1>New Invoice</h1>
 
@@ -176,10 +176,12 @@
           </button>
         </div>
         <div class="right flex">
-          <button type="button" @click="saveDraft" class="dark-purple">
+          <button type="submit" @click="saveDraft" class="dark-purple">
             Save Draft
           </button>
-          <button @click="publishInvoice" class="purple">Create Invoice</button>
+          <button type="submit" @click="publishInvoice" class="purple">
+            Create Invoice
+          </button>
         </div>
       </div>
     </form>
@@ -328,6 +330,13 @@ async function uploadInvoice() {
 
 function submitForm() {
   uploadInvoice();
+}
+
+const invoiceWrap = ref(null);
+function checkClick(event) {
+  if (event.target === invoiceWrap.value) {
+    store.commit("TOGGLE_MODAL");
+  }
 }
 </script>
 
