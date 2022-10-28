@@ -5,7 +5,10 @@
     class="invoice-wrap flex flex-column"
   >
     <form @submit.prevent="submitForm" class="invoice-content">
+      <Loader v-show="loading"/>
+
       <h1>New Invoice</h1>
+
       <!-- Bill From -->
       <div class="bill-from flex flex-column">
         <h4>Bill From</h4>
@@ -189,6 +192,7 @@ import { useStore } from "vuex";
 import { uid } from "uid";
 import db from "../firebase/firebaseInit";
 import { doc, setDoc } from "firebase/firestore";
+import Loader from "./Loader.vue";
 
 const store = useStore();
 
@@ -197,6 +201,8 @@ const dateOptions = ref({
   month: "short",
   day: "numeric",
 });
+
+const loading = ref(false);
 
 const billerStreetAddress = ref(null);
 const billerCity = ref(null);
@@ -283,6 +289,8 @@ async function uploadInvoice() {
     return;
   }
 
+  loading.value = true;
+
   calInvoiceTotal();
 
   await setDoc(doc(db, "invoices", "LA"), {
@@ -312,6 +320,8 @@ async function uploadInvoice() {
 
     productDescription: productDescription.value,
   });
+
+  loading.value = false;
 
   store.commit("TOGGLE_INVOICE");
 }
