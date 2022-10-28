@@ -186,10 +186,16 @@
 </template>
 
 <script setup>
-import { ref } from "vue";
+import { ref, watch } from "vue";
 import { useStore } from "vuex";
 
 const store = useStore();
+
+const dateOptions = ref({
+  year: "numeric",
+  month: "short",
+  day: "numeric",
+});
 
 const billerStreetAddress = ref(null);
 const billerCity = ref(null);
@@ -219,6 +225,23 @@ const productDescription = ref(null);
 function closeInvoice() {
   store.commit("TOGGLE_INVOICE");
 }
+
+invoiceDateUnix.value = Date.now();
+invoiceDate.value = new Date(invoiceDateUnix.value).toLocaleDateString(
+  "en-us",
+  dateOptions.value
+);
+
+watch(paymentTerms, (newValue) => {
+  const futureDate = new Date();
+  paymentDueDateUnix.value = futureDate.setDate(
+    futureDate.getDate() + parseInt(newValue)
+  );
+  paymentDueDate.value = new Date(paymentDueDateUnix.value).toLocaleDateString(
+    "en-us",
+    dateOptions.value
+  );
+});
 </script>
 
 <style lang="scss" scoped>
