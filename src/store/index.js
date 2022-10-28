@@ -1,8 +1,14 @@
 import { createStore } from "vuex";
 
 const store = createStore({
-  state: {},
-  mutations: {},
+  state: {
+    invoiceModal: null,
+  },
+  mutations: {
+    TOGGLE_INVOICE(state) {
+      state.invoiceModal = !state.invoiceModal;
+    },
+  },
   actions: {},
   modules: {},
 });

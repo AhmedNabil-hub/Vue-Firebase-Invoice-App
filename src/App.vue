@@ -3,7 +3,9 @@
     <div v-if="!mobile" class="app flex flex-column">
       <Navigation />
       <div class="app-content flex flex-column">
-        <InvoiceModal/>
+        <transition name="invoice">
+          <InvoiceModal v-if="invoiceModal"/>
+        </transition>
         <router-view />
       </div>
     </div>
@@ -15,12 +17,13 @@
 </template>
 
 <script setup>
-import { ref } from "vue";
+import { computed, ref } from "vue";
 import Navigation from "./components/Navigation.vue";
 import InvoiceModal from "./components/InvoiceModal.vue";
+import { useStore } from "vuex";
 
+// Mobile check
 const mobile = ref(null);
-
 function checkScreen() {
   const windowWidth = window.innerWidth;
   if (windowWidth <= 750) {
@@ -29,10 +32,15 @@ function checkScreen() {
   }
 
   mobile.value = false;
-};
-
+}
 checkScreen();
 window.addEventListener("resize", checkScreen);
+
+//
+
+const store = useStore();
+
+const invoiceModal = computed(() => store.state.invoiceModal);
 </script>
 
 <style lang="scss">
@@ -72,6 +80,18 @@ window.addEventListener("resize", checkScreen);
   p {
     margin-top: 16px;
   }
+}
+
+// Animated Invoice
+
+.invoice-enter-active,
+.invoice-leave-active {
+  transition: 0.8s ease all;
+}
+
+.invoice-enter-from,
+.invoice-leave-to {
+  transform: translateX(-700px);
 }
 
 button,

@@ -168,39 +168,34 @@
       <!-- Save/Exit -->
       <div class="save flex">
         <div class="left">
-          <button @click="closeInvoice" class="red">Cancel</button>
+          <button type="button" @click="closeInvoice" class="red">
+            Cancel
+          </button>
         </div>
         <div class="right flex">
-          <button @click="saveDraft" class="dark-purple">Save Draft</button>
-          <button @click="publishInvoice" class="purple">Create Invoice</button>
+          <button type="button" @click="saveDraft" class="dark-purple">
+            Save Draft
+          </button>
+          <button type="button" @click="publishInvoice" class="purple">
+            Create Invoice
+          </button>
         </div>
       </div>
     </form>
   </div>
 </template>
 
-<script>
-import { reactive, ref } from "vue";
+<script setup>
+import { ref } from "vue";
+import { useStore } from "vuex";
 
-// const biller = reactive({
-//   streetAddress: null,
-//   city: null,
-//   zipCode: null,
-//   country: null,
-// });
+const store = useStore();
+
 const billerStreetAddress = ref(null);
 const billerCity = ref(null);
 const billerZipCode = ref(null);
 const billerCountry = ref(null);
 
-// const client = ref({
-//   name: null,
-//   email: null,
-//   streetAddress: null,
-//   city: null,
-//   zipCode: null,
-//   country: null,
-// });
 const clientName = ref(null);
 const clientEmail = ref(null);
 const clientStreetAddress = ref(null);
@@ -208,14 +203,6 @@ const clientCity = ref(null);
 const clientZipCode = ref(null);
 const clientCountry = ref(null);
 
-// const invoice = ref({
-//   dateUnix: null,
-//   date: null,
-//   pending: null,
-//   draft: null,
-//   total: 0,
-//   itemsList: [],
-// });
 const invoiceDateUnix = ref(null);
 const invoiceDate = ref(null);
 const invoicePending = ref(null);
@@ -223,19 +210,15 @@ const invoiceDraft = ref(null);
 const invoiceItemList = ref([]);
 const invoiceTotal = ref(0);
 
-// const payment = ref({
-//   terms: null,
-//   dueDateUnix: null,
-//   dueDate: null,
-// });
 const paymentTerms = ref(null);
 const paymentDueDateUnix = ref(null);
 const paymentDueDate = ref(null);
 
-// const product = ref({
-//   description: null,
-// });
 const productDescription = ref(null);
+
+function closeInvoice() {
+  store.commit("TOGGLE_INVOICE");
+}
 </script>
 
 <style lang="scss" scoped>
@@ -246,7 +229,10 @@ const productDescription = ref(null);
   background-color: transparent;
   width: 100%;
   height: 100vh;
-  overflow-y: scroll;
+  overflow: scroll;
+  &::-webkit-scrollbar {
+    display: none;
+  }
 
   @media (min-width: 900px) {
     left: 90px;
