@@ -176,9 +176,7 @@
           <button type="button" @click="saveDraft" class="dark-purple">
             Save Draft
           </button>
-          <button type="button" @click="publishInvoice" class="purple">
-            Create Invoice
-          </button>
+          <button @click="publishInvoice" class="purple">Create Invoice</button>
         </div>
       </div>
     </form>
@@ -189,6 +187,8 @@
 import { ref, watch } from "vue";
 import { useStore } from "vuex";
 import { uid } from "uid";
+import db from "../firebase/firebaseInit";
+import { doc, setDoc } from "firebase/firestore";
 
 const store = useStore();
 
@@ -257,7 +257,67 @@ function addNewInvoiceItem() {
 }
 
 function deleteInvoiceItem(id) {
-  invoiceItemList.value = invoiceItemList.value.filter((item) => item.id !== id);
+  invoiceItemList.value = invoiceItemList.value.filter(
+    (item) => item.id !== id
+  );
+}
+
+function calInvoiceTotal() {
+  invoiceTotal.value = 0;
+  invoiceItemList.value.forEach((item) => {
+    invoiceTotal.value += item.total;
+  });
+}
+
+function publishInvoice() {
+  invoicePending.value = true;
+}
+
+function saveDraft() {
+  invoiceDraft.value = true;
+}
+
+async function uploadInvoice() {
+  if (invoiceItemList.value.length <= 0) {
+    alert("Please add work items");
+    return;
+  }
+
+  calInvoiceTotal();
+
+  await setDoc(doc(db, "invoices", "LA"), {
+    invoiceId: uid(6),
+    billerStreetAddress: billerStreetAddress.value,
+    billerCity: billerCity.value,
+    billerZipCode: billerZipCode.value,
+    billerCountry: billerCountry.value,
+
+    clientName: clientName.value,
+    clientEmail: clientEmail.value,
+    clientStreetAddress: clientStreetAddress.value,
+    clientCity: clientCity.value,
+    clientZipCode: clientZipCode.value,
+    clientCountry: clientCountry.value,
+
+    invoiceDateUnix: invoiceDateUnix.value,
+    invoiceDate: invoiceDate.value,
+    invoicePending: invoicePending.value,
+    invoiceDraft: invoiceDraft.value,
+    invoiceItemList: invoiceItemList.value,
+    invoiceTotal: invoiceTotal.value,
+
+    paymentTerms: paymentTerms.value,
+    paymentDueDateUnix: paymentDueDateUnix.value,
+    paymentDueDate: paymentDueDate.value,
+
+    productDescription: productDescription.value,
+  });
+
+  store.commit("TOGGLE_INVOICE");
+}
+
+function submitForm() {
+  uploadInvoice();
 }
 </script>
 
