@@ -188,6 +188,7 @@
 <script setup>
 import { ref, watch } from "vue";
 import { useStore } from "vuex";
+import { uid } from "uid";
 
 const store = useStore();
 
@@ -226,6 +227,7 @@ function closeInvoice() {
   store.commit("TOGGLE_INVOICE");
 }
 
+// Invoice Dates
 invoiceDateUnix.value = Date.now();
 invoiceDate.value = new Date(invoiceDateUnix.value).toLocaleDateString(
   "en-us",
@@ -242,6 +244,21 @@ watch(paymentTerms, (newValue) => {
     dateOptions.value
   );
 });
+
+// Add New Item
+function addNewInvoiceItem() {
+  invoiceItemList.value.push({
+    id: uid(),
+    name: "",
+    qty: "",
+    price: 0,
+    total: 0,
+  });
+}
+
+function deleteInvoiceItem(id) {
+  invoiceItemList.value = invoiceItemList.value.filter((item) => item.id !== id);
+}
 </script>
 
 <style lang="scss" scoped>
@@ -353,6 +370,7 @@ watch(paymentTerms, (newValue) => {
               right: 0;
               width: 12px;
               height: 16px;
+              cursor: pointer;
             }
           }
         }
