@@ -295,7 +295,7 @@ async function uploadInvoice() {
 
   calInvoiceTotal();
 
-  await setDoc(doc(db, "invoices", "LA"), {
+  await addDoc(collection(db, "invoices"), {
     invoiceId: uid(6),
     billerStreetAddress: billerStreetAddress.value,
     billerCity: billerCity.value,

@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div v-if="invociesLoaded">
     <div v-if="!mobile" class="app flex flex-column">
       <Navigation />
       <div class="app-content flex flex-column">
@@ -44,6 +44,12 @@ const store = useStore();
 
 const invoiceModal = computed(() => store.state.invoiceModal);
 const modalActive = computed(() => store.state.modalActive);
+const invoicesLoaded = computed(() => store.state.invoicesLoaded);
+
+function getInvoices() {
+  store.dispatch('GET_INVOICES');
+}
+getInvoices();
 </script>
 
 <style lang="scss">
