@@ -4,17 +4,20 @@
     <div class="header flex">
       <div class="left flex flex-column">
         <h1>Invoices</h1>
-        <span>There are 4 total invoices</span>
+        <span>There are {{ invoiceData.length }} total invoices</span>
       </div>
       <div class="right flex">
         <div @click="toggleFilterMenu" class="filter flex">
-          <span>Filter by status</span>
+          <span
+            >Filter by status
+            <span v-if="filteredInvoice">: {{ filteredInvoice }}</span></span
+          >
           <img src="@/assets/icon-arrow-down.svg" alt="" />
           <ul class="filter-menu" v-show="filterMenu">
-            <li>Draft</li>
-            <li>Pending</li>
-            <li>Paid</li>
-            <li>Clear Filter</li>
+            <li @click="filteredInvoices">Draft</li>
+            <li @click="filteredInvoices">Pending</li>
+            <li @click="filteredInvoices">Paid</li>
+            <li @click="filteredInvoices">Clear Filter</li>
           </ul>
         </div>
         <div @click="newInvoice" class="button flex">
@@ -61,6 +64,32 @@ function newInvoice() {
 
 function toggleFilterMenu() {
   filterMenu.value = !filterMenu.value;
+}
+
+const filteredInvoice = ref(null);
+const filteredData = computed(() => {
+  return invoiceData.value.filter((invoice) => {
+    if (filteredInvoice.value === "Draft") {
+      return invoice.invoiceDraft === true;
+    }
+    if (filteredInvoice.value === "Pending") {
+      return invoice.invoicePending === true;
+    }
+    if (filteredInvoice.value === "Paid") {
+      return invoice.invoicePaid === true;
+    }
+
+    return invoice;
+  });
+});
+
+function filteredInvoices(event) {
+  if (event.target.innerText === "Clear Filter") {
+    filteredInvoice.value = null;
+    return;
+  }
+
+  filteredInvoice.value = event.target.innerText;
 }
 </script>
 
