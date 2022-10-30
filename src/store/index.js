@@ -8,6 +8,7 @@ const store = createStore({
     modalActive: null,
     invoiceData: [],
     invoicesLoaded: false,
+    currentInvoiceArray: null,
   },
   mutations: {
     TOGGLE_INVOICE(state) {
@@ -21,7 +22,12 @@ const store = createStore({
     },
     INVOICES_LOADED(state) {
       state.invoicesLoaded = true;
-    }
+    },
+    SET_CURRENT_INVOICE(state, id) {
+      state.currentInvoiceArray = state.invoiceData.filter(
+        (invoice) => invoice.invoiceId === id
+      );
+    },
   },
   actions: {
     async GET_INVOICES({ commit, state }) {
@@ -62,7 +68,7 @@ const store = createStore({
         }
       });
 
-      commit('INVOICES_LOADED')
+      commit("INVOICES_LOADED");
     },
   },
   modules: {},

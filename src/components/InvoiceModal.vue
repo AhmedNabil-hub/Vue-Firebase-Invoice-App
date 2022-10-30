@@ -193,7 +193,7 @@ import { ref, watch } from "vue";
 import { useStore } from "vuex";
 import { uid } from "uid";
 import db from "../firebase/firebaseInit";
-import { doc, setDoc } from "firebase/firestore";
+import { collection, addDoc } from "firebase/firestore";
 import Loader from "./Loader.vue";
 
 const store = useStore();
