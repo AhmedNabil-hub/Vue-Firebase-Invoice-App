@@ -37,6 +37,23 @@ const store = createStore({
         (invoice) => invoice.invoiceId !== id
       );
     },
+    UPDATE_STATUS_TO_PAID(state, id) {
+      state.store.invoiceData.forEach((invoice) => {
+        if (invoice.docId === id) {
+          invoice.invoicePaid = true;
+          invoice.invoicePending = false;
+        }
+      });
+    },
+    UPDATE_STATUS_TO_PENDING(state, id) {
+      state.store.invoiceData.forEach((invoice) => {
+        if (invoice.docId === id) {
+          invoice.invoicePaid = false;
+          invoice.invoicePending = true;
+          invoice.invoiceDraft = false;
+        }
+      });
+    },
   },
   actions: {
     async GET_INVOICES({ commit, state }) {
@@ -131,6 +148,23 @@ const store = createStore({
       const getInvoice = db.collection("invoices").doc(docId);
       await getInvoice.delete();
       commit("DELETE_INVOICE", docId);
+    },
+    async UPDATE_STATUS_TO_PAID({ commit }, docId) {
+      const getInvoice = db.collection("invoices").doc(docId);
+      await getInvoice.update({
+        invoicePaid: true,
+        invoicePending: false,
+      });
+      commit("UPDATE_STATUS_TO_PAID", docId);
+    },
+    async UPDATE_STATUS_TO_PENDING({ commit }, docId) {
+      const getInvoice = db.collection("invoices").doc(docId);
+      await getInvoice.update({
+        invoicePaid: false,
+        invoicePending: true,
+        invoiceDraft: false,
+      });
+      commit("UPDATE_STATUS_TO_PENDING", docId);
     },
   },
   modules: {},

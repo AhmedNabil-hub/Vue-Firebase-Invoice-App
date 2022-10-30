@@ -385,6 +385,8 @@ async function uploadInvoice() {
   loading.value = false;
 
   store.commit("TOGGLE_INVOICE");
+
+  store.dispatch("GET_INVOICES");
 }
 
 async function updateInvoice() {

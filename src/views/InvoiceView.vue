@@ -138,6 +138,14 @@ async function deleteInvoice(docId) {
   await store.dispatch("DELETE_INVOICE", docId);
   route.push({ name: "Home" });
 }
+
+function updateStatusToPaid(docId) {
+  store.dispatch("UPDATE_STATUS_TO_PAID", docId);
+}
+
+function updateStatusToPending(docId) {
+  store.dispatch("UPDATE_STATUS_TO_PENDING", docId);
+}
 </script>
 
 <style lang="scss" scoped>
