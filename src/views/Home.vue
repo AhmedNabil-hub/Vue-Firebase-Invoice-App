@@ -26,7 +26,8 @@
       </div>
     </div>
     <!-- Invoices -->
-    <div v-if="invoiceData.length > 0">
+    <Loader v-if="!invoicesLoaded" />
+    <div v-else-if="invoicesLoaded && invoiceData.length > 0">
       <Invoice
         v-for="(invoice, index) in invoiceData"
         :key="index"
@@ -44,13 +45,15 @@
 </template>
 
 <script setup>
-import { ref } from "vue";
+import { computed, ref } from "vue";
 import { useStore } from "vuex";
 import Invoice from "../components/Invoice.vue";
+import Loader from "../components/Loader.vue";
 
 const store = useStore();
 const filterMenu = ref(false);
-const invoiceData = ref(store.state.invoiceData);
+const invoiceData = computed(() => store.state.invoiceData);
+const invoicesLoaded = computed(() => store.state.invoicesLoaded);
 
 function newInvoice() {
   store.commit("TOGGLE_INVOICE");

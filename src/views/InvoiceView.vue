@@ -21,12 +21,7 @@
         </div>
       </div>
       <div class="right flex">
-        <button
-          @click="toggleEditInvoice(currentInvoice.docId)"
-          class="dark-purple"
-        >
-          Edit
-        </button>
+        <button @click="toggleEditInvoice" class="dark-purple">Edit</button>
         <button @click="deleteInvoice(currentInvoice.docId)" class="red">
           Delete
         </button>
@@ -110,19 +105,39 @@
 </template>
 
 <script setup>
-import { ref } from "vue";
+import { computed, ref, watch } from "vue";
 import { useRoute } from "vue-router";
 import { useStore } from "vuex";
 
 const route = useRoute();
 const store = useStore();
-const currentInvoice = ref(null);
 
-function getCurrentInvoice() {
+(function getCurrentInvoice() {
+  if (store.state.invoiceData.length <= 0) {
+    store.dispatch("GET_INVOICES");
+  }
   store.commit("SET_CURRENT_INVOICE", route.params.invoiceId);
-  currentInvoice.value = store.state.currentInvoiceArray[0];
+  // currentInvoice.value = store.state.currentInvoiceArray[0];
+})();
+
+const currentInvoice = computed(() => store.state.currentInvoiceArray[0]);
+const editInvoice = ref(false);
+
+function toggleEditInvoice() {
+  store.commit("TOGGLE_EDIT_INVOICE");
+  store.commit("TOGGLE_INVOICE");
 }
-getCurrentInvoice();
+
+watch(editInvoice, (newValue) => {
+  if (!editInvoice.value) {
+    getCurrentInvoice();
+  }
+});
+
+async function deleteInvoice(docId) {
+  await store.dispatch("DELETE_INVOICE", docId);
+  route.push({ name: "Home" });
+}
 </script>
 
 <style lang="scss" scoped>
@@ -233,12 +248,12 @@ getCurrentInvoice();
           font-weight: 600;
         }
       }
-      
+
       .bill {
         p:nth-child(2) {
           font-size: 16px;
         }
-    
+
         p:nth-child(3) {
           margin-top: auto;
         }
@@ -301,7 +316,7 @@ getCurrentInvoice();
       .total {
         color: #ffffff;
         padding: 32px;
-        background-color: rgba(12,14,22,0.7);
+        background-color: rgba(12, 14, 22, 0.7);
         align-items: center;
         border-radius: 0 0 20px 20px;
 

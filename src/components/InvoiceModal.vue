@@ -7,7 +7,8 @@
     <form @submit.prevent="submitForm" class="invoice-content">
       <Loader v-show="loading" />
 
-      <h1>New Invoice</h1>
+      <h1 v-if="!editInvoice">New Invoice</h1>
+      <h1 v-else>Edit Invoice</h1>
 
       <!-- Bill From -->
       <div class="bill-from flex flex-column">
@@ -176,11 +177,28 @@
           </button>
         </div>
         <div class="right flex">
-          <button type="submit" @click="saveDraft" class="dark-purple">
+          <button
+            v-if="!editInvoice"
+            type="submit"
+            @click="saveDraft"
+            class="dark-purple"
+          >
             Save Draft
           </button>
-          <button type="submit" @click="publishInvoice" class="purple">
+          <button
+            v-if="!editInvoice"
+            type="submit"
+            class="purple"
+          >
             Create Invoice
+          </button>
+          <button
+            v-if="editInvoice"
+            type="submit"
+            
+            class="purple"
+          >
+            Update Invoice
           </button>
         </div>
       </div>
@@ -189,14 +207,16 @@
 </template>
 
 <script setup>
-import { ref, watch } from "vue";
+import { ref, watch, computed } from "vue";
 import { useStore } from "vuex";
 import { uid } from "uid";
 import db from "../firebase/firebaseInit";
 import { collection, addDoc } from "firebase/firestore";
 import Loader from "./Loader.vue";
+import { useRoute } from "vue-router";
 
 const store = useStore();
+const route = useRoute();
 
 const dateOptions = ref({
   year: "numeric",
@@ -205,6 +225,11 @@ const dateOptions = ref({
 });
 
 const loading = ref(false);
+
+const editInvoice = computed(() => store.state.editInvoice);
+const currentInvoice = computed(() => store.state.currentInvoiceArray[0]);
+
+const docId = ref(null);
 
 const billerStreetAddress = ref(null);
 const billerCity = ref(null);
@@ -233,14 +258,48 @@ const productDescription = ref(null);
 
 function closeInvoice() {
   store.commit("TOGGLE_INVOICE");
+  if (store.state.editInvoice == true) {
+    store.commit("TOGGLE_EDIT_INVOICE");
+  }
 }
 
 // Invoice Dates
-invoiceDateUnix.value = Date.now();
-invoiceDate.value = new Date(invoiceDateUnix.value).toLocaleDateString(
-  "en-us",
-  dateOptions.value
-);
+if (editInvoice == false) {
+  invoiceDateUnix.value = Date.now();
+  invoiceDate.value = new Date(invoiceDateUnix.value).toLocaleDateString(
+    "en-us",
+    dateOptions.value
+  );
+}
+
+if (editInvoice == true) {
+  docId.value = currentInvoice.value.docId;
+
+  billerStreetAddress.value = currentInvoice.value.billerStreetAddress;
+  billerCity.value = currentInvoice.value.billerCity;
+  billerZipCode.value = currentInvoice.value.billerZipCode;
+  billerCountry.value = currentInvoice.value.billerCountry;
+
+  clientName.value = currentInvoice.value.clientName;
+  clientEmail.value = currentInvoice.value.clientEmail;
+  clientStreetAddress.value = currentInvoice.value.clientStreetAddress;
+  clientCity.value = currentInvoice.value.clientCity;
+  clientZipCode.value = currentInvoice.value.clientZipCode;
+  clientCountry.value = currentInvoice.value.clientCountry;
+
+  invoiceDateUnix.value = currentInvoice.value.invoiceDateUnix;
+  invoiceDate.value = currentInvoice.value.invoiceDate;
+  invoicePending.value = currentInvoice.value.invoicePending;
+  invoiceDraft.value = currentInvoice.value.invoiceDraft;
+  invoiceItemList.value = currentInvoice.value.invoiceItemList;
+  invoiceTotal.value = currentInvoice.value.invoiceTotal;
+
+  paymentTerms.value = currentInvoice.value.paymentTerms;
+  paymentDueDateUnix.value = currentInvoice.value.paymentDueDateUnix;
+  paymentDueDate.value = currentInvoice.value.paymentDueDate;
+
+  productDescription.value = currentInvoice.value.productDescription;
+}
 
 watch(paymentTerms, (newValue) => {
   const futureDate = new Date();
@@ -328,8 +387,61 @@ async function uploadInvoice() {
   store.commit("TOGGLE_INVOICE");
 }
 
+async function updateInvoice() {
+  if (invoiceItemList.value.length <= 0) {
+    alert("Please add work items");
+    return;
+  }
+
+  loading.value = true;
+
+  calInvoiceTotal();
+
+  // const docsRef = collection(db, "invoices").doc(docId.value);
+
+  await addDoc(collection(db, "invoices"), {
+    billerStreetAddress: billerStreetAddress.value,
+    billerCity: billerCity.value,
+    billerZipCode: billerZipCode.value,
+    billerCountry: billerCountry.value,
+
+    clientName: clientName.value,
+    clientEmail: clientEmail.value,
+    clientStreetAddress: clientStreetAddress.value,
+    clientCity: clientCity.value,
+    clientZipCode: clientZipCode.value,
+    clientCountry: clientCountry.value,
+
+    invoiceDateUnix: invoiceDateUnix.value,
+    invoiceDate: invoiceDate.value,
+    invoiceItemList: invoiceItemList.value,
+    invoiceTotal: invoiceTotal.value,
+
+    paymentTerms: paymentTerms.value,
+    paymentDueDateUnix: paymentDueDateUnix.value,
+    paymentDueDate: paymentDueDate.value,
+
+    productDescription: productDescription.value,
+  });
+
+  loading.value = false;
+
+  const data = {
+    docId: docId.value,
+    routeId: route.params.invoiceId,
+  };
+
+  store.dispatch("UPDATE_INVOICES", data);
+}
+
 function submitForm() {
-  uploadInvoice();
+  if (editInvoice) {
+    updateInvoice();
+    return;
+  } else {
+    uploadInvoice();
+    return;
+  }
 }
 
 const invoiceWrap = ref(null);

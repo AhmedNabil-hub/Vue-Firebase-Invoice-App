@@ -22,6 +22,9 @@ function closeModal() {
 function closeInvoice() {
   store.commit("TOGGLE_MODAL");
   store.commit("TOGGLE_INVOICE");
+  if (store.state.editInvoice) {
+    store.commit("TOGGLE_EDIT_INVOICE");
+  }
 }
 </script>
 
