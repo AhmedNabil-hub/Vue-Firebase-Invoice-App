@@ -1,12 +1,12 @@
 <template>
   <div>
     <div v-if="!mobile" class="app flex flex-column">
-      <Loader v-show="invociesLoaded" />
+      <!-- <Loader v-show="invociesLoaded" /> -->
       <Navigation />
       <div class="app-content flex flex-column">
-        <Modal v-if="modalActive"/>
+        <Modal v-if="modalActive" />
         <transition name="invoice">
-          <InvoiceModal v-if="invoiceModal"/>
+          <InvoiceModal v-if="invoiceModal" />
         </transition>
         <router-view />
       </div>
@@ -27,7 +27,7 @@ import Modal from "./components/Modal.vue";
 import Loader from "./components/Loader.vue";
 
 // Mobile check
-const mobile = ref(null);
+const mobile = ref(false);
 function checkScreen() {
   const windowWidth = window.innerWidth;
   if (windowWidth <= 750) {
@@ -49,7 +49,7 @@ const modalActive = computed(() => store.state.modalActive);
 const invoicesLoaded = computed(() => store.state.invoicesLoaded);
 
 function getInvoices() {
-  store.dispatch('GET_INVOICES');
+  store.dispatch("GET_INVOICES");
 }
 getInvoices();
 </script>
@@ -150,7 +150,7 @@ button,
   width: 100%;
   padding: 40px 10px;
   max-width: 850px;
-  margin: 0;
+  margin: 0 auto;
 
   @media (min-width: 900px) {
     padding-top: 72px;

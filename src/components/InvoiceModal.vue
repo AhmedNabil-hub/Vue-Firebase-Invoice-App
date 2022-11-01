@@ -18,21 +18,26 @@
           <input
             type="text"
             id="billerStreetAddress"
-            v-model="billerStreetAddress"
+            v-model="invoiceData.billerStreetAddress"
             required
           />
         </div>
         <div class="location-details flex">
           <div class="input flex flex-column">
             <label for="billercity">City</label>
-            <input type="text" id="billercity" v-model="billerCity" required />
+            <input
+              type="text"
+              id="billercity"
+              v-model="invoiceData.billerCity"
+              required
+            />
           </div>
           <div class="input flex flex-column">
             <label for="billerZipCode">Zip Code</label>
             <input
               type="text"
               id="billerZipCode"
-              v-model="billerZipCode"
+              v-model="invoiceData.billerZipCode"
               required
             />
           </div>
@@ -41,7 +46,7 @@
             <input
               type="text"
               id="billerCountry"
-              v-model="billerCountry"
+              v-model="invoiceData.billerCountry"
               required
             />
           </div>
@@ -52,32 +57,47 @@
         <h4>Bill To</h4>
         <div class="input flex flex-column">
           <label for="clientName">Name</label>
-          <input type="text" id="clientName" v-model="clientName" required />
+          <input
+            type="text"
+            id="clientName"
+            v-model="invoiceData.clientName"
+            required
+          />
         </div>
         <div class="input flex flex-column">
           <label for="clientEmail">Email</label>
-          <input type="text" id="clientEmail" v-model="clientEmail" required />
+          <input
+            type="text"
+            id="clientEmail"
+            v-model="invoiceData.clientEmail"
+            required
+          />
         </div>
         <div class="input flex flex-column">
           <label for="clientStreetAddress">Street Address</label>
           <input
             type="text"
             id="clientStreetAddress"
-            v-model="clientStreetAddress"
+            v-model="invoiceData.clientStreetAddress"
             required
           />
         </div>
         <div class="location-details flex">
           <div class="input flex flex-column">
             <label for="clientcity">City</label>
-            <input type="text" id="clientcity" v-model="clientCity" required />
+            <input
+              type="text"
+              id="clientcity"
+              v-model="invoiceData.clientCity"
+              required
+            />
           </div>
           <div class="input flex flex-column">
             <label for="clientZipCode">Zip Code</label>
             <input
               type="text"
               id="clientZipCode"
-              v-model="clientZipCode"
+              v-model="invoiceData.clientZipCode"
               required
             />
           </div>
@@ -86,7 +106,7 @@
             <input
               type="text"
               id="clientCountry"
-              v-model="clientCountry"
+              v-model="invoiceData.clientCountry"
               required
             />
           </div>
@@ -100,7 +120,7 @@
             <input
               type="text"
               id="invoiceDate"
-              v-model="invoiceDate"
+              v-model="invoiceData.invoiceDate"
               disabled
             />
           </div>
@@ -109,14 +129,14 @@
             <input
               type="text"
               id="paymentDueDate"
-              v-model="paymentDueDate"
+              v-model="invoiceData.paymentDueDate"
               disabled
             />
           </div>
         </div>
         <div class="input flex flex-column">
           <label for="paymentTerms">Payment Terms</label>
-          <select id="paymentTerms" v-model="paymentTerms">
+          <select id="paymentTerms" v-model="invoiceData.paymentTerms">
             <option value="30">Net 30 Days</option>
             <option value="60">Net 60 Days</option>
           </select>
@@ -126,7 +146,7 @@
           <input
             type="text"
             id="productDescription"
-            v-model="productDescription"
+            v-model="invoiceData.productDescription"
             required
           />
         </div>
@@ -141,7 +161,7 @@
             </tr>
             <tr
               class="table-items flex"
-              v-for="(item, index) in invoiceItemList"
+              v-for="(item, index) in invoiceData.invoiceItemList"
               :key="index"
             >
               <td class="item-name">
@@ -185,19 +205,10 @@
           >
             Save Draft
           </button>
-          <button
-            v-if="!editInvoice"
-            type="submit"
-            class="purple"
-          >
+          <button v-if="!editInvoice" @click="publishInvoice" type="submit" class="purple">
             Create Invoice
           </button>
-          <button
-            v-if="editInvoice"
-            type="submit"
-            
-            class="purple"
-          >
+          <button v-if="editInvoice" type="submit" class="purple">
             Update Invoice
           </button>
         </div>
@@ -207,7 +218,7 @@
 </template>
 
 <script setup>
-import { ref, watch, computed } from "vue";
+import { ref, watch, computed, reactive } from "vue";
 import { useStore } from "vuex";
 import { uid } from "uid";
 import db from "../firebase/firebaseInit";
@@ -218,7 +229,7 @@ import { useRoute } from "vue-router";
 const store = useStore();
 const route = useRoute();
 
-const dateOptions = ref({
+const dateOptions = reactive({
   year: "numeric",
   month: "short",
   day: "numeric",
@@ -227,94 +238,92 @@ const dateOptions = ref({
 const loading = ref(false);
 
 const editInvoice = computed(() => store.state.editInvoice);
-const currentInvoice = computed(() => store.state.currentInvoiceArray[0]);
+const currentInvoice = computed(() => store.state.currentInvoice);
+const invoicesLoaded = computed(() => store.state.invoicesLoaded);
 
 const docId = ref(null);
-
-const billerStreetAddress = ref(null);
-const billerCity = ref(null);
-const billerZipCode = ref(null);
-const billerCountry = ref(null);
-
-const clientName = ref(null);
-const clientEmail = ref(null);
-const clientStreetAddress = ref(null);
-const clientCity = ref(null);
-const clientZipCode = ref(null);
-const clientCountry = ref(null);
-
-const invoiceDateUnix = ref(null);
-const invoiceDate = ref(null);
-const invoicePending = ref(null);
-const invoiceDraft = ref(null);
-const invoiceItemList = ref([]);
-const invoiceTotal = ref(0);
-
-const paymentTerms = ref(null);
-const paymentDueDateUnix = ref(null);
-const paymentDueDate = ref(null);
-
-const productDescription = ref(null);
+const invoiceData = reactive({
+  billerStreetAddress: null,
+  billerCity: null,
+  billerZipCode: null,
+  billerCountry: null,
+  clientName: null,
+  clientEmail: null,
+  clientStreetAddress: null,
+  clientCity: null,
+  clientZipCode: null,
+  clientCountry: null,
+  invoiceDateUnix: null,
+  invoiceDate: null,
+  invoicePending: null,
+  invoiceDraft: null,
+  invoicePaid: null,
+  invoiceItemList: [],
+  invoiceTotal: null,
+  paymentTerms: null,
+  paymentDueDateUnix: null,
+  paymentDueDate: null,
+  productDescription: null,
+});
 
 function closeInvoice() {
   store.commit("TOGGLE_INVOICE");
-  if (store.state.editInvoice == true) {
+  if (editInvoice.value) {
     store.commit("TOGGLE_EDIT_INVOICE");
   }
 }
 
 // Invoice Dates
-if (editInvoice == false) {
-  invoiceDateUnix.value = Date.now();
-  invoiceDate.value = new Date(invoiceDateUnix.value).toLocaleDateString(
-    "en-us",
-    dateOptions.value
-  );
+if (!editInvoice.value) {
+  invoiceData.invoiceDateUnix = Date.now();
+  invoiceData.invoiceDate = new Date(
+    invoiceData.invoiceDateUnix
+  ).toLocaleDateString("en-us", dateOptions);
 }
 
-if (editInvoice == true) {
+if (editInvoice.value) {
   docId.value = currentInvoice.value.docId;
 
-  billerStreetAddress.value = currentInvoice.value.billerStreetAddress;
-  billerCity.value = currentInvoice.value.billerCity;
-  billerZipCode.value = currentInvoice.value.billerZipCode;
-  billerCountry.value = currentInvoice.value.billerCountry;
+  invoiceData.billerStreetAddress = currentInvoice.value.billerStreetAddress;
+  invoiceData.billerCity = currentInvoice.value.billerCity;
+  invoiceData.billerZipCode = currentInvoice.value.billerZipCode;
+  invoiceData.billerCountry = currentInvoice.value.billerCountry;
 
-  clientName.value = currentInvoice.value.clientName;
-  clientEmail.value = currentInvoice.value.clientEmail;
-  clientStreetAddress.value = currentInvoice.value.clientStreetAddress;
-  clientCity.value = currentInvoice.value.clientCity;
-  clientZipCode.value = currentInvoice.value.clientZipCode;
-  clientCountry.value = currentInvoice.value.clientCountry;
+  invoiceData.clientName = currentInvoice.value.clientName;
+  invoiceData.clientEmail = currentInvoice.value.clientEmail;
+  invoiceData.clientStreetAddress = currentInvoice.value.clientStreetAddress;
+  invoiceData.clientCity = currentInvoice.value.clientCity;
+  invoiceData.clientZipCode = currentInvoice.value.clientZipCode;
+  invoiceData.clientCountry = currentInvoice.value.clientCountry;
 
-  invoiceDateUnix.value = currentInvoice.value.invoiceDateUnix;
-  invoiceDate.value = currentInvoice.value.invoiceDate;
-  invoicePending.value = currentInvoice.value.invoicePending;
-  invoiceDraft.value = currentInvoice.value.invoiceDraft;
-  invoiceItemList.value = currentInvoice.value.invoiceItemList;
-  invoiceTotal.value = currentInvoice.value.invoiceTotal;
+  invoiceData.invoiceDateUnix = currentInvoice.value.invoiceDateUnix;
+  invoiceData.invoiceDate = currentInvoice.value.invoiceDate;
+  invoiceData.invoiceItemList = currentInvoice.value.invoiceItemList;
+  invoiceData.invoiceTotal = currentInvoice.value.invoiceTotal;
 
-  paymentTerms.value = currentInvoice.value.paymentTerms;
-  paymentDueDateUnix.value = currentInvoice.value.paymentDueDateUnix;
-  paymentDueDate.value = currentInvoice.value.paymentDueDate;
+  invoiceData.paymentTerms = currentInvoice.value.paymentTerms;
+  invoiceData.paymentDueDateUnix = currentInvoice.value.paymentDueDateUnix;
+  invoiceData.paymentDueDate = currentInvoice.value.paymentDueDate;
 
-  productDescription.value = currentInvoice.value.productDescription;
+  invoiceData.productDescription = currentInvoice.value.productDescription;
 }
 
-watch(paymentTerms, (newValue) => {
-  const futureDate = new Date();
-  paymentDueDateUnix.value = futureDate.setDate(
-    futureDate.getDate() + parseInt(newValue)
-  );
-  paymentDueDate.value = new Date(paymentDueDateUnix.value).toLocaleDateString(
-    "en-us",
-    dateOptions.value
-  );
-});
+watch(
+  () => invoiceData.paymentTerms,
+  (newValue) => {
+    const futureDate = new Date();
+    invoiceData.paymentDueDateUnix = futureDate.setDate(
+      futureDate.getDate() + parseInt(newValue)
+    );
+    invoiceData.paymentDueDate = new Date(
+      invoiceData.paymentDueDateUnix
+    ).toLocaleDateString("en-us", dateOptions);
+  }
+);
 
 // Add New Item
 function addNewInvoiceItem() {
-  invoiceItemList.value.push({
+  invoiceData.invoiceItemList.push({
     id: uid(),
     name: "",
     qty: "",
@@ -324,28 +333,28 @@ function addNewInvoiceItem() {
 }
 
 function deleteInvoiceItem(id) {
-  invoiceItemList.value = invoiceItemList.value.filter(
+  invoiceData.invoiceItemList = invoiceData.invoiceItemList.filter(
     (item) => item.id !== id
   );
 }
 
 function calInvoiceTotal() {
-  invoiceTotal.value = 0;
-  invoiceItemList.value.forEach((item) => {
-    invoiceTotal.value += item.total;
+  invoiceData.invoiceTotal = 0;
+  invoiceData.invoiceItemList.forEach((item) => {
+    invoiceData.invoiceTotal += item.total;
   });
 }
 
 function publishInvoice() {
-  invoicePending.value = true;
+  invoiceData.invoicePending = true;
 }
 
 function saveDraft() {
-  invoiceDraft.value = true;
+  invoiceData.invoiceDraft = true;
 }
 
 async function uploadInvoice() {
-  if (invoiceItemList.value.length <= 0) {
+  if (invoiceData.invoiceItemList.length <= 0) {
     alert("Please add work items");
     return;
   }
@@ -354,33 +363,12 @@ async function uploadInvoice() {
 
   calInvoiceTotal();
 
-  await addDoc(collection(db, "invoices"), {
+  const data = {
     invoiceId: uid(6),
-    billerStreetAddress: billerStreetAddress.value,
-    billerCity: billerCity.value,
-    billerZipCode: billerZipCode.value,
-    billerCountry: billerCountry.value,
+    ...invoiceData,
+  };
 
-    clientName: clientName.value,
-    clientEmail: clientEmail.value,
-    clientStreetAddress: clientStreetAddress.value,
-    clientCity: clientCity.value,
-    clientZipCode: clientZipCode.value,
-    clientCountry: clientCountry.value,
-
-    invoiceDateUnix: invoiceDateUnix.value,
-    invoiceDate: invoiceDate.value,
-    invoicePending: invoicePending.value,
-    invoiceDraft: invoiceDraft.value,
-    invoiceItemList: invoiceItemList.value,
-    invoiceTotal: invoiceTotal.value,
-
-    paymentTerms: paymentTerms.value,
-    paymentDueDateUnix: paymentDueDateUnix.value,
-    paymentDueDate: paymentDueDate.value,
-
-    productDescription: productDescription.value,
-  });
+  await store.dispatch("ADD_INVOICE", data);
 
   loading.value = false;
 
@@ -390,7 +378,7 @@ async function uploadInvoice() {
 }
 
 async function updateInvoice() {
-  if (invoiceItemList.value.length <= 0) {
+  if (invoiceData.invoiceItemList.length <= 0) {
     alert("Please add work items");
     return;
   }
@@ -399,45 +387,46 @@ async function updateInvoice() {
 
   calInvoiceTotal();
 
-  // const docsRef = collection(db, "invoices").doc(docId.value);
+  const data = {
+    invoiceId: route.params.invoiceId,
+    billerStreetAddress: invoiceData.billerStreetAddress,
+    billerCity: invoiceData.billerCity,
+    billerZipCode: invoiceData.billerZipCode,
+    billerCountry: invoiceData.billerCountry,
 
-  await addDoc(collection(db, "invoices"), {
-    billerStreetAddress: billerStreetAddress.value,
-    billerCity: billerCity.value,
-    billerZipCode: billerZipCode.value,
-    billerCountry: billerCountry.value,
+    clientName: invoiceData.clientName,
+    clientEmail: invoiceData.clientEmail,
+    clientStreetAddress: invoiceData.clientStreetAddress,
+    clientCity: invoiceData.clientCity,
+    clientZipCode: invoiceData.clientZipCode,
+    clientCountry: invoiceData.clientCountry,
 
-    clientName: clientName.value,
-    clientEmail: clientEmail.value,
-    clientStreetAddress: clientStreetAddress.value,
-    clientCity: clientCity.value,
-    clientZipCode: clientZipCode.value,
-    clientCountry: clientCountry.value,
+    invoiceDateUnix: invoiceData.invoiceDateUnix,
+    invoiceDate: invoiceData.invoiceDate,
+    invoiceItemList: invoiceData.invoiceItemList,
+    invoiceTotal: invoiceData.invoiceTotal,
 
-    invoiceDateUnix: invoiceDateUnix.value,
-    invoiceDate: invoiceDate.value,
-    invoiceItemList: invoiceItemList.value,
-    invoiceTotal: invoiceTotal.value,
+    paymentTerms: invoiceData.paymentTerms,
+    paymentDueDateUnix: invoiceData.paymentDueDateUnix,
+    paymentDueDate: invoiceData.paymentDueDate,
 
-    paymentTerms: paymentTerms.value,
-    paymentDueDateUnix: paymentDueDateUnix.value,
-    paymentDueDate: paymentDueDate.value,
+    productDescription: invoiceData.productDescription,
+  };
 
-    productDescription: productDescription.value,
+  await store.dispatch("UPDATE_INVOICE", {
+    docId: docId.value,
+    data: data,
   });
 
   loading.value = false;
-
-  const data = {
-    docId: docId.value,
-    routeId: route.params.invoiceId,
-  };
-
-  store.dispatch("UPDATE_INVOICES", data);
+  store.commit("TOGGLE_INVOICE");
+  store.commit("TOGGLE_EDIT_INVOICE");
+  await store.dispatch("GET_INVOICES");
+  store.commit("SET_CURRENT_INVOICE", data.invoiceId);
 }
 
 function submitForm() {
-  if (editInvoice) {
+  if (editInvoice.value) {
     updateInvoice();
     return;
   } else {

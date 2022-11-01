@@ -1,5 +1,6 @@
 <template>
-  <div v-if="currentInvoice" class="invoice-view container">
+  <Loader v-show="!invoicesLoaded" />
+  <div v-if="invoicesLoaded && currentInvoice" class="invoice-view container">
     <router-link class="nav-link flex" :to="{ name: 'Home' }">
       <img src="@/assets/icon-arrow-left.svg" alt="" />
       <span>Go Back</span>
@@ -97,7 +98,7 @@
         </div>
         <div class="total flex">
           <p>Amount Due</p>
-          <p>{{ currentInvoice.invoiceTotal }}</p>
+          <p>$ {{ currentInvoice.invoiceTotal }}</p>
         </div>
       </div>
     </div>
@@ -106,21 +107,24 @@
 
 <script setup>
 import { computed, ref, watch } from "vue";
-import { useRoute } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
 import { useStore } from "vuex";
+import Loader from "../components/Loader.vue";
 
 const route = useRoute();
+const router = useRouter();
 const store = useStore();
 
-(function getCurrentInvoice() {
+const invoicesLoaded = computed(() => store.state.invoicesLoaded);
+
+(async function getCurrentInvoice() {
   if (store.state.invoiceData.length <= 0) {
-    store.dispatch("GET_INVOICES");
+    await store.dispatch("GET_INVOICES");
   }
   store.commit("SET_CURRENT_INVOICE", route.params.invoiceId);
-  // currentInvoice.value = store.state.currentInvoiceArray[0];
 })();
 
-const currentInvoice = computed(() => store.state.currentInvoiceArray[0]);
+const currentInvoice = computed(() => store.state.currentInvoice);
 const editInvoice = ref(false);
 
 function toggleEditInvoice() {
@@ -135,16 +139,17 @@ watch(editInvoice, (newValue) => {
 });
 
 async function deleteInvoice(docId) {
-  await store.dispatch("DELETE_INVOICE", docId);
-  route.push({ name: "Home" });
+  await store.dispatch("DELETE_INVOICE", { docId });
+  await store.dispatch("GET_INVOICES");
+  router.push({ name: "Home" });
 }
 
 function updateStatusToPaid(docId) {
-  store.dispatch("UPDATE_STATUS_TO_PAID", docId);
+  store.dispatch("UPDATE_STATUS_TO_PAID", { docId });
 }
 
 function updateStatusToPending(docId) {
-  store.dispatch("UPDATE_STATUS_TO_PENDING", docId);
+  store.dispatch("UPDATE_STATUS_TO_PENDING", { docId });
 }
 </script>
 

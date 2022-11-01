@@ -32,7 +32,7 @@
     <Loader v-if="!invoicesLoaded" />
     <div v-else-if="invoicesLoaded && invoiceData.length > 0">
       <Invoice
-        v-for="(invoice, index) in invoiceData"
+        v-for="(invoice, index) in filteredData"
         :key="index"
         :invoice="invoice"
       />

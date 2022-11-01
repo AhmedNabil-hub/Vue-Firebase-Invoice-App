@@ -11,9 +11,11 @@
 </template>
 
 <script setup>
+import { computed } from "vue";
 import { useStore } from "vuex";
 
 const store = useStore();
+const editInvoice = computed(() => store.state.editInvoice);
 
 function closeModal() {
   store.commit("TOGGLE_MODAL");
@@ -22,7 +24,7 @@ function closeModal() {
 function closeInvoice() {
   store.commit("TOGGLE_MODAL");
   store.commit("TOGGLE_INVOICE");
-  if (store.state.editInvoice) {
+  if (editInvoice.value) {
     store.commit("TOGGLE_EDIT_INVOICE");
   }
 }
